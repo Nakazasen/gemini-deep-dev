@@ -11,10 +11,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
+from deep_dev_installer import install
 from deep_dev_update import update
 
 
 class UpdateSimulationTests(unittest.TestCase):
+    def test_installer_enables_auto_update_by_default(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            profile = Path(raw) / "profile"
+            install(ROOT / "bundle", profile, "0.1.0", "https://example.invalid/update.json", sys.executable)
+            config = json.loads((profile / ".gemini" / "config" / "deep-dev-update.json").read_text(encoding="utf-8"))
+            self.assertTrue(config["auto_update"])
+
     def test_verified_file_url_update_installs_new_release(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             temp = Path(raw)

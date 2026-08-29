@@ -13,7 +13,10 @@ $config.manifest_url = $ManifestUrl
 $config.auto_update = $true
 $config | ConvertTo-Json | Set-Content -LiteralPath $configPath -Encoding utf8
 $scriptPath = Join-Path $profileRoot ".gemini\config\skills\deep-dev\updater\AutoUpdate-DeepDev.ps1"
-$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-$trigger = New-ScheduledTaskTrigger -Daily -At 09:00
-Register-ScheduledTask -TaskName "Gemini Deep Dev Auto Update" -Action $action -Trigger $trigger -Force | Out-Null
-Write-Output "Auto-update enabled. A restart of Antigravity is still required after an installed update."
+$startup = [Environment]::GetFolderPath("Startup")
+$launcher = Join-Path $startup "Gemini Deep Dev Auto Update.cmd"
+@"
+@echo off
+start "" /b powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "$scriptPath" >nul 2>&1
+"@ | Set-Content -LiteralPath $launcher -Encoding ascii
+Write-Output "Auto-update enabled. It checks after Windows sign-in without requiring administrator permission. Restart Antigravity after an installed update."

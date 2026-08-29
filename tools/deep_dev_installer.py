@@ -65,7 +65,7 @@ def _update_hooks(profile: Path, skill_dir: Path) -> Path:
     return hooks_path
 
 
-def install(bundle_root: Path, user_profile: Path, version: str, manifest_url: str, python_executable: str, auto_update: bool = False) -> dict[str, str]:
+def install(bundle_root: Path, user_profile: Path, version: str, manifest_url: str, python_executable: str, auto_update: bool = True) -> dict[str, str]:
     validate_bundle(bundle_root)
     skill_dir = user_profile / ".gemini" / "config" / "skills" / "deep-dev"
     harness_dir = user_profile / ".gemini" / "antigravity" / "custom_harness" / "custom_harness"
@@ -91,9 +91,9 @@ def main() -> int:
     parser.add_argument("--version", required=True)
     parser.add_argument("--manifest-url", default="")
     parser.add_argument("--python-executable", default=sys.executable)
-    parser.add_argument("--enable-auto-update", action="store_true")
+    parser.add_argument("--disable-auto-update", action="store_true")
     args = parser.parse_args()
-    print(json.dumps(install(args.bundle_root.resolve(), args.user_profile.resolve(), args.version, args.manifest_url, args.python_executable, args.enable_auto_update)))
+    print(json.dumps(install(args.bundle_root.resolve(), args.user_profile.resolve(), args.version, args.manifest_url, args.python_executable, not args.disable_auto_update)))
     return 0
 
 
