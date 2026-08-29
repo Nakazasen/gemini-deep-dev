@@ -28,6 +28,7 @@ $manifest = [ordered]@{
     sha256 = $sha256
     release_notes = "Release v$version"
 }
-$manifest | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $projectRoot "release\update.json") -Encoding utf8
+$manifestPath = Join-Path $projectRoot "release\update.json"
+[System.IO.File]::WriteAllText($manifestPath, ($manifest | ConvertTo-Json), [System.Text.UTF8Encoding]::new($false))
 Write-Output "Built $archive"
 Write-Output "SHA-256: $sha256"

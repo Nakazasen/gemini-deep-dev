@@ -20,7 +20,7 @@ def version_key(value: str) -> tuple[int, ...]:
 
 def fetch_json(url: str) -> dict:
     with urllib.request.urlopen(url, timeout=20) as response:
-        return json.loads(response.read().decode("utf-8"))
+        return json.loads(response.read().decode("utf-8-sig"))
 
 
 def update(manifest_url: str, current_version: str, user_profile: Path, python_executable: str, auto_update: bool = False) -> dict:

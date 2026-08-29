@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import codecs
 import shutil
 import sys
 import tempfile
@@ -58,6 +59,14 @@ class UpdateSimulationTests(unittest.TestCase):
             manifest.write_text(json.dumps({"latest_version": "0.1.1", "package_url": archive.as_uri(), "sha256": "0" * 64}), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "SHA-256"):
                 update(manifest.as_uri(), "0.1.0", temp / "profile", sys.executable)
+
+    def test_accepts_utf8_bom_manifest(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            temp = Path(raw)
+            manifest = temp / "update.json"
+            manifest.write_bytes(codecs.BOM_UTF8 + json.dumps({"latest_version": "0.1.0"}).encode("utf-8"))
+            result = update(manifest.as_uri(), "0.1.0", temp / "profile", sys.executable)
+            self.assertEqual(result, {"status": "up_to_date", "version": "0.1.0"})
 
 
 if __name__ == "__main__":
