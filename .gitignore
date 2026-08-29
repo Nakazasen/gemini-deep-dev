@@ -1,0 +1,16 @@
+# Runtime artifacts and local evidence
+.deep_dev/
+deep-dev-runs/
+graphify-out/
+*.log
+
+# Local configuration and credentials
+.env
+*.local.json
+
+# Python runtime cache
+__pycache__/
+*.py[cod]
+
+# Locally built release archives
+dist/

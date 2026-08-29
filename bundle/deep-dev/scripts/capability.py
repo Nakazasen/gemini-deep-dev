@@ -1,0 +1,243 @@
+"""Two-stage, scope-bound, short-lived and single-use Deep Dev capabilities."""
+
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import secrets
+import time
+from typing import Any
+import uuid
+
+
+TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{32,128}$")
+TICKET_LIFETIME_SECONDS = 600
+# One initial proposal plus at most two evidence-driven revisions.  The budget
+# is deliberately shared between proposal-completeness and test-failure fixes.
+MAX_REPAIR_ATTEMPTS = 2
+
+
+def _base_dir() -> Path:
+    local = os.environ.get("LOCALAPPDATA")
+    return (Path(local) / "deep-dev" if local else Path.home() / ".deep-dev") / "capabilities"
+
+
+def _write_atomic(path: Path, data: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_name(f"{path.name}.tmp.{uuid.uuid4().hex[:8]}")
+    with open(temp, "w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, separators=(",", ":"))
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temp, path)
+
+
+def _new_ticket(kind: str, scope: dict[str, Any] | None = None, extra: dict[str, Any] | None = None) -> str:
+    now = datetime.now(timezone.utc)
+    token = secrets.token_urlsafe(32)
+    record = {
+        "kind": kind,
+        "token_sha256": hashlib.sha256(token.encode("utf-8")).hexdigest(),
+        "issued_at": now.isoformat(),
+        "expires_at": (now + timedelta(seconds=TICKET_LIFETIME_SECONDS)).isoformat(),
+        "audience": "deep-dev-orchestrator" if kind in {"scoped", "repair"} else "deep-dev-scope-exchange",
+        "scope": scope,
+    }
+    if extra:
+        record.update(extra)
+    _write_atomic(_base_dir() / f"{token}.json", record)
+    return token
+
+
+def issue_ticket() -> str:
+    """Issue a bootstrap ticket; it cannot authorize the orchestrator directly."""
+    return _new_ticket("entry")
+
+
+def issue_ticket_once(invocation_key: str) -> str | None:
+    """Return one live entry ticket for an invocation, never minting a replacement."""
+    key_hash = hashlib.sha256(invocation_key.encode("utf-8")).hexdigest()
+    marker_dir = _base_dir() / "invocations"
+    marker = marker_dir / f"{key_hash}.json"
+    lock = marker_dir / f"{key_hash}.lock"
+    marker_dir.mkdir(parents=True, exist_ok=True)
+
+    for _ in range(20):
+        try:
+            data = json.loads(marker.read_text(encoding="utf-8"))
+            token = str(data.get("token", ""))
+            return token if TOKEN_RE.fullmatch(token) and (_base_dir() / f"{token}.json").is_file() else None
+        except FileNotFoundError:
+            pass
+        except (OSError, ValueError, json.JSONDecodeError):
+            return None
+        try:
+            descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+            os.close(descriptor)
+            break
+        except FileExistsError:
+            time.sleep(0.01)
+    else:
+        return None
+
+    try:
+        if marker.is_file():
+            data = json.loads(marker.read_text(encoding="utf-8"))
+            token = str(data.get("token", ""))
+            return token if TOKEN_RE.fullmatch(token) and (_base_dir() / f"{token}.json").is_file() else None
+        token = issue_ticket()
+        _write_atomic(marker, {"token": token, "created_at": datetime.now(timezone.utc).isoformat()})
+        return token
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def normalize_scope(workspace_root: Path, target_paths: list[str], config_path: Path | None, run_id: str | None) -> dict[str, Any]:
+    workspace = workspace_root.expanduser().resolve(strict=False)
+    if not workspace.is_absolute() or not workspace.is_dir():
+        raise ValueError("Workspace root must be an existing absolute directory.")
+    normalized_targets: list[str] = []
+    for raw in target_paths:
+        candidate = Path(raw).expanduser()
+        candidate = candidate if candidate.is_absolute() else workspace / candidate
+        resolved = candidate.resolve(strict=False)
+        resolved.relative_to(workspace)
+        normalized_targets.append(str(resolved))
+    if not normalized_targets:
+        raise ValueError("At least one target path is required.")
+    # A Deep Dev run always uses the workspace-local test configuration.  Bind
+    # its canonical default even when the scope exchange omits --config-path,
+    # so a later canonical MCP proposal cannot be rejected merely because the
+    # host supplied that same default explicitly.
+    candidate = (config_path or Path(".deep_dev") / "config.json").expanduser()
+    candidate = candidate if candidate.is_absolute() else workspace / candidate
+    resolved = candidate.resolve(strict=False)
+    resolved.relative_to(workspace)
+    normalized_config = str(resolved)
+    return {
+        "workspace_root": str(workspace),
+        "target_paths": sorted(set(normalized_targets)),
+        "config_path": normalized_config,
+        # Run identifiers are generated by the trusted orchestrator.  They
+        # are observability metadata, not part of user/model capability scope;
+        # binding a model-supplied value makes an otherwise identical proposal
+        # fail before it can enter the bounded repair loop.
+        "run_id": None,
+    }
+
+
+def _read_ticket(
+    token: str,
+    expected_kinds: set[str],
+    expected_audience: str,
+) -> tuple[bool, str, dict[str, Any] | None, Path | None]:
+    if not TOKEN_RE.fullmatch(token):
+        return False, "Capability ticket has an invalid format.", None, None
+    path = _base_dir() / f"{token}.json"
+    if not path.is_file():
+        return False, "Capability ticket is missing or already consumed.", None, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        expected_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+        expires = datetime.fromisoformat(str(data["expires_at"]))
+        if not secrets.compare_digest(str(data.get("token_sha256", "")), expected_hash):
+            return False, "Capability ticket integrity check failed.", None, None
+        if data.get("kind") not in expected_kinds or data.get("audience") != expected_audience:
+            return False, "Capability ticket audience or type mismatch.", None, None
+        if expires.tzinfo is None or datetime.now(timezone.utc) >= expires:
+            return False, "Capability ticket expired. Invoke /deep-dev again.", None, None
+        return True, "Capability ticket validated.", data, path
+    except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
+        return False, f"Capability ticket validation failed: {type(exc).__name__}.", None, None
+
+
+def _consume_validated_ticket(path: Path, data: dict[str, Any]) -> tuple[bool, str]:
+    try:
+        consumed = path.with_suffix(f".consumed.{uuid.uuid4().hex[:8]}.json")
+        os.replace(path, consumed)
+        data["consumed_at"] = datetime.now(timezone.utc).isoformat()
+        _write_atomic(consumed, data)
+        return True, "Capability ticket consumed."
+    except OSError:
+        return False, "Capability ticket is missing or already consumed."
+
+
+def _consume_raw(token: str, expected_kind: str, expected_audience: str) -> tuple[bool, str, dict[str, Any] | None]:
+    ok, reason, data, path = _read_ticket(token, {expected_kind}, expected_audience)
+    if not ok or data is None or path is None:
+        return False, reason, None
+    consumed, consume_reason = _consume_validated_ticket(path, data)
+    return (True, consume_reason, data) if consumed else (False, consume_reason, None)
+
+
+def exchange_ticket(entry_ticket: str, workspace_root: Path, target_paths: list[str], config_path: Path | None = None, run_id: str | None = None) -> tuple[bool, str]:
+    try:
+        scope = normalize_scope(workspace_root, target_paths, config_path, run_id)
+    except (OSError, RuntimeError, ValueError) as exc:
+        return False, f"Scope validation failed: {exc}"
+    ok, reason, _ = _consume_raw(entry_ticket, "entry", "deep-dev-scope-exchange")
+    if not ok:
+        return False, reason
+    return True, _new_ticket("scoped", scope)
+
+
+def consume_ticket(token: str, scope: dict[str, Any]) -> tuple[bool, str]:
+    ok, reason, _ = consume_ticket_details(token, scope)
+    return ok, reason
+
+
+def consume_ticket_details(
+    token: str,
+    scope: dict[str, Any],
+    task: str | None = None,
+) -> tuple[bool, str, dict[str, Any] | None]:
+    ok, reason, data, path = _read_ticket(token, {"scoped", "repair"}, "deep-dev-orchestrator")
+    if not ok or data is None or path is None:
+        return False, reason, None
+    expected = data.get("scope")
+    workspace = Path(scope["workspace_root"]).expanduser().resolve(strict=False)
+    raw_config = Path(scope["config_path"]).expanduser() if scope.get("config_path") else None
+    normalized = {
+        "workspace_root": str(workspace),
+        "target_paths": sorted(str((workspace / item).resolve(strict=False)) if not Path(item).is_absolute() else str(Path(item).resolve(strict=False)) for item in scope["target_paths"]),
+        "config_path": str((workspace / raw_config).resolve(strict=False) if raw_config and not raw_config.is_absolute() else raw_config.resolve(strict=False)) if raw_config else None,
+        "run_id": scope.get("run_id"),
+    }
+    if expected != normalized:
+        return False, "Capability scope mismatch; ticket cannot be reused for different targets.", None
+    expected_task_sha256 = data.get("task_sha256")
+    if expected_task_sha256:
+        if task is None:
+            return False, "Repair capability requires the original task for verification.", None
+        actual_task_sha256 = hashlib.sha256(task.encode("utf-8")).hexdigest()
+        if not secrets.compare_digest(str(expected_task_sha256), actual_task_sha256):
+            return False, "Repair capability task mismatch; ticket cannot be reused for a different request.", None
+    consumed, consume_reason = _consume_validated_ticket(path, data)
+    if not consumed:
+        return False, consume_reason, None
+    return True, "Scoped capability consumed.", data
+
+
+def issue_repair_ticket(
+    scope: dict[str, Any],
+    repair_attempt: int,
+    task: str,
+    reason: str,
+) -> str | None:
+    if repair_attempt < 1 or repair_attempt > MAX_REPAIR_ATTEMPTS:
+        return None
+    if reason not in {"incomplete_proposal", "test_failure", "proposal_schema"}:
+        return None
+    return _new_ticket(
+        "repair",
+        scope,
+        {
+            "repair_attempt": repair_attempt,
+            "repair_reason": reason,
+            "task_sha256": hashlib.sha256(task.encode("utf-8")).hexdigest(),
+        },
+    )

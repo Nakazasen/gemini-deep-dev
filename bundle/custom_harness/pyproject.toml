@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "custom_harness"
+version = "1.0.0"
+description = "Deterministic Gemini Flash Agent Harness with MCP Grounding and Declarative Fail-Closed Guardrails"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "Antigravity Engineering", email = "engineering@antigravity.google" }
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Code Generators",
+    "Topic :: Security",
+]
+dependencies = [
+    "pydantic>=2.5.0",
+    "httpx>=0.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-mock>=3.12.0",
+]
+genai = [
+    "google-genai>=0.1.0",
+]
+mcp = [
+    "fastmcp>=0.1.0",
+    "mcp>=1.0.0",
+]
+fuzzy = [
+    "rapidfuzz>=3.0.0",
+]
+all = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "google-genai>=0.1.0",
+    "fastmcp>=0.1.0",
+    "mcp>=1.0.0",
+    "rapidfuzz>=3.0.0",
+]
+
+[project.scripts]
+antigravity-harness = "custom_harness.cli:main"
+antigravity-mcp-grounding = "custom_harness.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["custom_harness*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"

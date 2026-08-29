@@ -1,0 +1,8 @@
+{
+  "version": "4.0",
+  "config_alias": "deep_dev_harness",
+  "server_name": "deep_dev_harness",
+  "transport": "direct_mcp",
+  "wrapper_tool": "call_mcp_tool",
+  "tool_name": "execute_host_proposal"
+}

@@ -1,0 +1,39 @@
+{
+  "version": "1.0",
+  "generated_at": "2026-08-29T15:09:46.380734Z",
+  "files": {
+    "SKILL.md": "fcdbad8d0a9aeba7986952c240d5806129b3edb7a5035a16a2add8c9b4e203a9",
+    "mcp_contract.json": "fd55e97e48484dc37f5ad5519d7aa7ec3cdc1791eb93727418cbd9434c590730",
+    "scripts/capability.py": "8a6ef412dd93a3fbe75b3d7603b4bd7156c111e72e938119f46beaa82675488c",
+    "scripts/deep_dev_gate.py": "d83d4380499e62bde48e2ad1e9c49454c1437616862ffdbf7db2a7d854f824da",
+    "scripts/deep_dev_gate.cmd": "38ccd61f93f095c4d8a2b4116ba587a193c4f023707f405faee991da2bef0b53",
+    "scripts/deep_dev_mode.py": "345ffbd86dd612b69b242c9e8abb69894cfef97845dd79f932bd548004c4a49e",
+    "scripts/deep_dev_mode.cmd": "e481cb54349eff449904cfbdc0655101a29e0607022591dd338950fec5992e9a",
+    "scripts/deep_dev_reminder.py": "87c93e5dfcecc87af97b55db841f7d8ea046000f8ec6ef7fd85c7f598cebd312",
+    "scripts/deep_dev_reminder.cmd": "eb0718ed5dac52d59d4a72d5173363ede598f1f9c465bdac351b1ae171e4a445",
+    "scripts/evidence_bootstrap.py": "8f6573d36887d1c5aeeef89cc838723b664ea5ed9a77f8b006dde8602c6b160e",
+    "scripts/deep_dev_scope.py": "ce2c46a1a88b17552e3732d022f8eab836338da985e6151512149a3387b01c14",
+    "scripts/deep_orchestrator.py": "b9eba9a7def863462891d9c4dc325418dbbb4f71576d1618d1ad3ab3cebf33f6",
+    "scripts/proposal_adapter.py": "3672e71b1d4cd8f32898de625672af35c61eaeb703ba427ed2438fc5a7fe7e88",
+    "scripts/memory_adapter.py": "3a82ee05f4ac0369fb593002e73f62a60852ca155ca94265c03277bbe436e947",
+    "scripts/preflight.py": "08cb20e3a16b858ca66e0b8e7529edf03200a5872d472e7fd09a794effb0fb93",
+    "scripts/graph_freshness.py": "b49344e7a51b6720207097ee01fe34aa0a08c79c1c855b11554ac9a1ce8bf851",
+    "scripts/golden_e2e.py": "faac2c1b3e7d71bc63bfb5c7a82f882b83150f64f53bf870e481cfcc99f7fa79",
+    "scripts/flash_e2e_simulator.py": "6f1ca79092ded6eabbff247828d0ffb9d836950ea1723b5742bf7b67b023653c",
+    "scripts/graph_diff.py": "97756023ff66951e197fe59331e0d182ceae36d656b518301d36920ac176389e",
+    "scripts/isolation_manager.py": "64beb69feec1aef0b8054f69d1bc5d68c6ae55cf859e80b41e579425bd668290",
+    "scripts/patch_serializer.py": "ce7a74e6995159aab84f1ef9fba40229c465c22e6be3098a17a698ccfb59feca",
+    "scripts/path_utils.py": "b7bff8200d1e460e201a861ccf02d91d1e75ffa6e88d15fee01593f840070161",
+    "scripts/config_lock.py": "b84a34d39cf1f12fef4b7e852f5497ed4cd6e51ec1223b507aa1ad4edfe15f22",
+    "scripts/test_executor.py": "bbca9e016a00ae59fa320f5816341d1a8c6aa21394ad4d85e8d86d116edba3a4",
+    "scripts/integrity.py": "b0066e1462a8fb0fc64101e6db1eb8f84ac9609e018f380c159433f5839570e5",
+    "scripts/memory_hygiene.py": "d7443ed25cedfafa3c36b5266fe126719e999c9de0a2e4f67587d17ae044e55e",
+    "scripts/mcp_contract.py": "e134e1133a51211a288077fb78aa099be99fc7068c9e3793157fe1a92062f96c",
+    "scripts/state_store.py": "d1d2e43b884c61cb06d21268dcce6d3095bed6cf43034e7a46e64ae23622e115",
+    "scripts/trajectory.py": "c508688364ad2023b0bf81504392b377d1c1e76e8ee9f073af5f6b8b9d5b2ca2"
+  },
+  "harness_files": {
+    "custom_harness/mcp_grounding/server.py": "1dea9efe98d438b016a0795fccb2d2b6b70657baeb4dd0523269a68df1e0993f",
+    "custom_harness/harness/client.py": "f0f641f1fc6aa686f524a124882ab7457032e42f3e452c38c3805989d6d37644"
+  }
+}
