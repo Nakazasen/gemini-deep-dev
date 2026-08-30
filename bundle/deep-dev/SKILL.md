@@ -45,9 +45,9 @@ For a repair, invoke the small advisory squad specified by `repair.teamwork_prev
 
 ## Verified workflow
 
-1. **Preflight:** Auto-start and verify AgentMemory, self-heal Graphify, fingerprint the exact Git working state (clean or dirty), lock `.deep_dev/config.json`, and resolve impact paths.
+1. **Preflight:** Auto-start and verify AgentMemory, self-heal Graphify, fingerprint the exact Git working state (clean or dirty), lock `.deep_dev/config.json`, and resolve impact paths as advisory evidence. Impact neighbors never expand the signed mutation or snapshot scope.
 2. **Snapshot:** Capture SHA-256 hashes for every allowed path.
-3. **Host coder + deterministic critic:** Gemini Flash generates structured operations in memory; Deep Dev validates paths, hashes, schema, dependency boundaries, and tests without requiring a second Gemini API key.
+3. **Host coder + deterministic critic:** Gemini Flash generates structured operations in memory; Deep Dev validates paths, hashes, schema, dependency boundaries, and tests without requiring a second Gemini API key. Dependency capture scans only signed code targets with bounded file/time limits; it never walks virtual environments, build outputs, or the whole repository for a file-scoped proposal.
 4. **Isolation and verification:** Mirror the user's exact current baseline into an external Git worktree, apply the proposal there, require a safe dependency `graph_diff.json`, run allowlisted tests, verify cleanup and an unchanged baseline, persist evidence, then apply only the verified delta to the main workspace before `ACCEPT_PATCH`.
 
 Progress is recorded without screenshots: each run writes append-only `events.jsonl`, liveness timestamps, and a compact per-project health summary under `%LOCALAPPDATA%\deep-dev`.

@@ -17,12 +17,13 @@ from deep_dev_gate import _audit_denial, decide
 from mcp_contract import CONFIG_ALIAS, DIRECT_TOOL, SERVER_NAME, TOOL_NAME, WRAPPER_TOOL
 from state_store import DeepDevState, RunState
 from trajectory import EXPECTED_TRAJECTORY, TrajectoryRecorder
-from graph_diff import capture as capture_graph, compare as compare_graph
+from graph_diff import DependencyGraphCaptureError, capture as capture_graph, compare as compare_graph
 from memory_hygiene import review as review_memory
 from memory_adapter import AgentMemoryRESTBackend
 from preflight import PreflightChecker
 from isolation_manager import IsolationManager
 from graph_freshness import GraphFreshnessChecker
+from deep_orchestrator import separate_impact_from_mutation_scope
 from deep_dev_reminder import (
     _command_prefix,
     _evidence_for_invocation,
@@ -205,6 +206,39 @@ def test_graph_diff_denies_new_dependency_outside_scope(tmp_path: Path) -> None:
     report = compare_graph(baseline, capture_graph(tmp_path), [tmp_path / "a.py"], tmp_path)
     assert report["safe"] is False
     assert report["violations"] == [["a.py", "b.py"]]
+
+
+def test_dependency_capture_scans_only_signed_source_files(tmp_path: Path) -> None:
+    source = tmp_path / "src"
+    source.mkdir()
+    (source / "a.py").write_text("import src.b\n", encoding="utf-8")
+    (source / "b.py").write_text("VALUE = 1\n", encoding="utf-8")
+    noise = tmp_path / ".venv" / "Lib" / "site-packages"
+    noise.mkdir(parents=True)
+    for index in range(50):
+        (noise / f"noise_{index}.py").write_text("import src.b\n", encoding="utf-8")
+
+    graph = capture_graph(tmp_path, ["src/a.py"])
+
+    assert graph["scope"] == "signed_targets"
+    assert graph["scanned_files"] == 1
+    assert graph["edges"] == [["src/a.py", "src/b.py"]]
+
+
+def test_dependency_capture_fails_closed_at_file_limit(tmp_path: Path) -> None:
+    (tmp_path / "a.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (tmp_path / "b.py").write_text("VALUE = 2\n", encoding="utf-8")
+    with pytest.raises(DependencyGraphCaptureError, match="file limit"):
+        capture_graph(tmp_path, max_files=1)
+
+
+def test_graph_impact_never_expands_signed_mutation_scope() -> None:
+    mutation, advisory = separate_impact_from_mutation_scope(
+        ["src/store.py", "tests/test_store.py"],
+        ["src/store.py", "src/app.py", "tests/test_store.py", "tests/test_ui.py"],
+    )
+    assert mutation == ["src/store.py", "tests/test_store.py"]
+    assert advisory == ["src/app.py", "tests/test_ui.py"]
 
 
 def test_memory_hygiene_quarantines_conflicts_and_stale_items(tmp_path: Path) -> None:

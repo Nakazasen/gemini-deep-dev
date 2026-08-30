@@ -5,12 +5,23 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
-from typing import Any
+import time
+from typing import Any, Iterable
 
 
 _JS_IMPORT = re.compile(r"(?:from\s+|require\s*\(|import\s*\()\s*['\"]([^'\"]+)['\"]")
+_CODE_SUFFIXES = frozenset({".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"})
+_SKIP_DIRECTORIES = frozenset({
+    ".git", "__pycache__", "node_modules", "dist", "build", "local_cases",
+    "local_runs", "graphify-out", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+})
+
+
+class DependencyGraphCaptureError(RuntimeError):
+    """Dependency capture exceeded its signed scope or bounded resource budget."""
 
 
 def _inside(path: Path, root: Path) -> bool:
@@ -68,15 +79,77 @@ def _edges(path: Path, root: Path) -> set[tuple[str, str]]:
     return found
 
 
-def capture(root: Path) -> dict[str, Any]:
+def _walk_code_files(root: Path, source_paths: Iterable[str | Path] | None) -> Iterable[Path]:
+    """Yield code files, preferring an explicit signed source boundary."""
+    if source_paths is not None:
+        seen: set[Path] = set()
+        for raw in source_paths:
+            candidate = (root / Path(raw)).resolve(strict=False) if not Path(raw).is_absolute() else Path(raw).resolve(strict=False)
+            if not _inside(candidate, root):
+                raise DependencyGraphCaptureError(f"Dependency source escaped workspace: {raw}")
+            if candidate.is_file() and candidate.suffix.lower() in _CODE_SUFFIXES and candidate not in seen:
+                seen.add(candidate)
+                yield candidate
+        return
+
+    for directory, names, files in os.walk(root):
+        names[:] = [
+            name for name in names
+            if name not in _SKIP_DIRECTORIES
+            and not name.startswith(".venv")
+            and not name.startswith(".tmp_")
+        ]
+        base = Path(directory)
+        for name in files:
+            candidate = base / name
+            if candidate.suffix.lower() in _CODE_SUFFIXES:
+                yield candidate
+
+
+def capture(
+    root: Path,
+    source_paths: Iterable[str | Path] | None = None,
+    *,
+    max_files: int = 2000,
+    max_seconds: float = 5.0,
+    max_file_bytes: int = 2 * 1024 * 1024,
+) -> dict[str, Any]:
     root = root.resolve()
-    suffixes = {".py", ".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"}
-    files = sorted(path for path in root.rglob("*") if path.is_file() and path.suffix.lower() in suffixes and ".git" not in path.parts)
+    started = time.monotonic()
+    files: list[Path] = []
+    for path in _walk_code_files(root, source_paths):
+        if time.monotonic() - started > max_seconds:
+            raise DependencyGraphCaptureError(
+                f"Dependency capture exceeded {max_seconds:.1f}s before parsing."
+            )
+        if len(files) >= max_files:
+            raise DependencyGraphCaptureError(
+                f"Dependency capture exceeded the {max_files}-file limit."
+            )
+        try:
+            if path.stat().st_size > max_file_bytes:
+                raise DependencyGraphCaptureError(
+                    f"Dependency source exceeds the {max_file_bytes}-byte limit: {path.name}"
+                )
+        except OSError as exc:
+            raise DependencyGraphCaptureError(f"Dependency source cannot be inspected: {path.name}") from exc
+        files.append(path)
+
     edges: set[tuple[str, str]] = set()
-    for path in files:
+    for path in sorted(files):
+        if time.monotonic() - started > max_seconds:
+            raise DependencyGraphCaptureError(
+                f"Dependency capture exceeded {max_seconds:.1f}s while parsing {len(files)} files."
+            )
         edges.update(_edges(path, root))
     serial = sorted([source, target] for source, target in edges)
-    return {"root": str(root), "edges": serial, "sha256": hashlib.sha256(json.dumps(serial, separators=(",", ":")).encode()).hexdigest()}
+    return {
+        "root": str(root),
+        "edges": serial,
+        "sha256": hashlib.sha256(json.dumps(serial, separators=(",", ":")).encode()).hexdigest(),
+        "scanned_files": len(files),
+        "scope": "signed_targets" if source_paths is not None else "bounded_workspace",
+    }
 
 
 def compare(baseline: dict[str, Any], candidate: dict[str, Any], allowed_paths: list[Path], root: Path) -> dict[str, Any]:

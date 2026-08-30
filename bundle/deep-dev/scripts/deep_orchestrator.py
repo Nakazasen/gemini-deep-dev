@@ -116,6 +116,16 @@ def validate_declared_target_coverage(
     return True, ""
 
 
+def separate_impact_from_mutation_scope(
+    declared_targets: List[str],
+    impacted_paths: List[str],
+) -> Tuple[List[str], List[str]]:
+    """Keep Graphify impact advisory; only signed targets may enter mutation scope."""
+    mutation_scope = sorted(set(declared_targets))
+    advisory_impact = sorted(set(impacted_paths) - set(mutation_scope))
+    return mutation_scope, advisory_impact
+
+
 def persist_test_results(run_dir: Path, suite_result: TestSuiteResult) -> Path:
     """Persist command-level test evidence before the disposable worktree is removed."""
     artifact = run_dir / "test_results.json"
@@ -421,9 +431,7 @@ class DeepDevOrchestrator:
         declared = target_paths or []
         impacted, degraded_graph = GraphFreshnessChecker.query_impact(ws, declared)
         state.degraded_graph = degraded_graph
-        allowed_paths = sorted(list(set(impacted + declared)))
-        if not allowed_paths and declared:
-            allowed_paths = declared
+        allowed_paths, advisory_impact = separate_impact_from_mutation_scope(declared, impacted)
         state.allowed_paths = allowed_paths
         state.save()
 
@@ -440,8 +448,30 @@ class DeepDevOrchestrator:
                 degraded_graph=state.degraded_graph,
                 error=err_msg,
             )
-        state.record_step("IMPACT_ANALYSIS", evidence={"target_count": len(allowed_paths), "degraded": degraded_graph})
-        baseline_dependency_graph = capture_dependency_graph(ws)
+        state.record_step("IMPACT_ANALYSIS", evidence={
+            "target_count": len(allowed_paths),
+            "advisory_impact_count": len(advisory_impact),
+            "degraded": degraded_graph,
+        })
+        state.heartbeat("Capturing dependency baseline for signed mutation targets.")
+        try:
+            baseline_dependency_graph = capture_dependency_graph(ws, allowed_paths)
+        except Exception as exc:
+            err_msg = f"Scoped dependency baseline failed: {exc}"
+            state.transition_to(DeepDevState.STOP, error=err_msg)
+            return DeepDevOrchestratorResult(
+                success=False,
+                run_id=state.run_id,
+                project_id=project_id,
+                terminal_state=DeepDevState.STOP.value,
+                final_verdict="REJECTED_UNSAFE",
+                degraded_memory=state.degraded_memory,
+                degraded_graph=state.degraded_graph,
+                error=err_msg,
+            )
+        state.heartbeat(
+            f"Dependency baseline complete for {baseline_dependency_graph.get('scanned_files', 0)} code files."
+        )
 
         # 5. Snapshot Capture
         state.transition_to(DeepDevState.WORKSPACE_SNAPSHOT)
@@ -680,7 +710,22 @@ class DeepDevOrchestrator:
             else (wt_path / Path(item).resolve(strict=False).relative_to(ws)).resolve(strict=False)
             for item in allowed_paths
         ]
-        candidate_dependency_graph = capture_dependency_graph(wt_path)
+        try:
+            candidate_dependency_graph = capture_dependency_graph(wt_path, allowed_paths)
+        except Exception as exc:
+            term_state, err_msg = cls._cleanup_and_resolve_state(
+                ws, wt_path, project_id, state.run_id,
+                f"Scoped candidate dependency capture failed: {exc}",
+                DeepDevState.ROLLBACK,
+            )
+            state.record_step("GRAPH_DIFF", status="failed", evidence={"capture_error": str(exc)})
+            state.transition_to(term_state, error=err_msg)
+            return DeepDevOrchestratorResult(
+                success=False, run_id=state.run_id, project_id=project_id,
+                terminal_state=term_state.value, final_verdict=final_verdict,
+                degraded_memory=state.degraded_memory, degraded_graph=state.degraded_graph,
+                error=err_msg,
+            )
         graph_diff_report = compare_dependency_graph(
             baseline_dependency_graph,
             candidate_dependency_graph,
