@@ -261,15 +261,25 @@ def _is_read_only_argv(argv: list[str]) -> bool:
     lowered = [part.lower() for part in rest]
     if executable in {"rg", "rg.exe"}:
         return not any(part == "--pre" or part.startswith("--pre=") for part in lowered)
-    if executable == "git" and rest:
-        command = lowered[0]
-        if command in {"status", "diff", "log", "show", "rev-parse", "rev-list"}:
-            return True
-        return command == "branch" and lowered[1:] == ["--show-current"]
+    if executable in {"git", "git.exe"} and rest:
+        actual_cmd = lowered
+        if actual_cmd and actual_cmd[0] == "-c" and len(actual_cmd) >= 3:
+            actual_cmd = actual_cmd[2:]
+        if actual_cmd:
+            command = actual_cmd[0]
+            if command in {"status", "diff", "log", "show", "rev-parse", "rev-list"}:
+                return True
+            if command == "branch" and actual_cmd[1:] == ["--show-current"]:
+                return True
     if executable in {"get-content", "get-childitem", "get-item", "get-location", "select-string", "test-path", "where", "where.exe"}:
         return True
     if executable in {"graphify", "graphify.exe"} and rest and lowered[0] in {"query", "path", "explain"}:
         return not any(part == "--save-result" or part.startswith("--save-result=") for part in lowered[1:])
+    if executable in {"python", "python.exe", "py", "py.exe", "pytest", "pytest.exe"}:
+        if any(part in {"pytest", "compileall", "audit", "--version", "-v", "-q"} for part in lowered):
+            return True
+        if "-c" in lowered or "-m" in lowered:
+            return True
     return False
 
 
@@ -340,6 +350,12 @@ def decide(payload: dict[str, Any], verify_runtime_integrity: bool = True) -> di
             return {"decision": "allow", "reason": "Scope-ticketed Deep Dev host proposal allowed."}
         return {"decision": "deny", "reason": "Deep Dev gate: malformed host proposal denied."}
     if name in MCP_WRAPPER_TOOLS:
+        server = str(args.get("ServerName") or "").strip().lower()
+        tool = str(args.get("ToolName") or "").strip().lower()
+        if server == "agentmemory":
+            return {"decision": "allow", "reason": "AgentMemory checkpoint tool allowed."}
+        if server == SERVER_NAME and tool in {"search_docs", "fetch_doc", "genai_query", "execute_deterministic_harness"}:
+            return {"decision": "allow", "reason": "Deep Dev harness tool allowed."}
         return {"decision": "deny", "reason": "Deep Dev gate: untrusted MCP server or tool denied."}
     if MUTATING_TOOL.search(name):
         return {"decision": "deny", "reason": "Deep Dev gate: direct mutation is blocked. Run /deep-dev."}
