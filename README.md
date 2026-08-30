@@ -1,28 +1,58 @@
-# Gemini Deep Dev
+# Gemini Deep Dev (v0.1.1)
 
-Gemini Deep Dev giúp Gemini sửa code đáng tin hơn trong Antigravity.
+**Bộ khung thực thi tất định (Deterministic Execution Harness & Quality Gates) dành riêng cho Google Gemini trong Antigravity IDE.**
 
-Khi bạn dùng Gemini bình thường, nó vẫn nhanh và không bị Deep Dev cản trở. Khi bạn gõ **`/deep-dev`**, mọi thay đổi sẽ đi qua một vòng kiểm tra an toàn trước khi vào dự án thật.
+---
 
-## Nó làm gì?
+## 🎯 Vấn đề giải quyết
+
+Dòng mô hình **Gemini Flash (1.5 / 2.0 / 3.7 Flash)** có tốc độ cực nhanh và cửa sổ ngữ cảnh lớn, nhưng khi lập trình tự do thường gặp phải các vấn đề:
+1. **Báo PASS ảo (Fake PASS)**: Khẳng định đã làm xong hoặc đã fix lỗi nhưng thực tế chưa chạy lệnh test/compiler nào.
+2. **Lười biếng (Placeholder Syndrome)**: Tự động rút gọn code bằng `// TODO`, `/* code giữ nguyên */`, `...`, `pass`.
+3. **Loãng ngữ cảnh (Attention Dispersion)**: Khi nạp nhiều file cùng lúc, model bị phân tán sự chú ý và bỏ sót các ràng buộc nhỏ.
+
+**Gemini Deep Dev** ra đời để biến Gemini Flash thành một cỗ máy lập trình **nhanh, chuẩn xác và không thể gian lận** bằng các chốt chặn ở tầng thực thi (Runtime Process Gates).
+
+---
+
+## ⚙️ Cơ chế hoạt động
 
 ```text
-Bạn yêu cầu thay đổi
-        ↓
-Gemini lập kế hoạch và đề xuất bản vá
-        ↓
-Deep Dev thử bản vá trong thư mục cách ly
-        ↓
-Chạy test độc lập
-        ↓
-Đạt: áp dụng vào dự án thật   |   Lỗi: hủy bản thử, dự án thật không đổi
+               Người dùng yêu cầu tác vụ (/deep-dev)
+                               ↓
+               Khảo sát AST & Scoped Subgraph (Graphify)
+                               ↓
+               Sinh bản vá nguyên tử (Atomic Exact Replace - No Placeholders)
+                               ↓
+               Thử nghiệm bản vá trong Git Worktree cách ly
+                               ↓
+               Chạy Test Suite & Linter độc lập từ Terminal
+                               ↓
+      ┌────────────────────────┴────────────────────────┐
+      ▼                                                 ▼
+[TẤT CẢ TEST PASS]                              [CÓ TEST FAIL / LỖI]
+  • Tự động merge vào dự án thật                  • Hủy bỏ bản thử (Rollback an toàn)
+  • Cập nhật AgentMemory Checkpoint               • Dự án gốc giữ nguyên 100%
+  • Báo cáo trạng thái ACCEPT_PATCH               • Kích hoạt Repair Feedback Loop
 ```
 
-Điểm quan trọng: Gemini không thể tự nói “test ổn”. Harness tự chạy những test mà dự án đã cho phép, rồi mới quyết định áp dụng hay rollback.
+---
 
-## Cài đặt
+## 🚀 Tính năng nổi bật trong bản v0.1.1 (Lean & Fast)
 
-Đóng hoàn toàn Antigravity, mở PowerShell và chạy:
+- **Lean Execution Engine**: Tinh giản tối đa các bước thủ tục trung gian rườm rà, giải phóng 100% năng lực suy luận của Gemini Flash cho code logic.
+- **Zero-Evidence = Failure**: Cấm tuyệt đối việc báo cáo hoàn thành nếu không có stdout thực tế từ Terminal Runner.
+- **Atomic Diff Interceptor**: Ép buộc thay thế chính xác từng dòng code (`exact_replace`), tự nhiên loại bỏ hoàn toàn code lười `TODO`.
+- **Chế độ kép linh hoạt (Dual Mode)**:
+  - **Chat thông thường**: Hoạt động nhanh, áp dụng quy tắc Lean Invariant (code đầy đủ, kiểm thử trước khi báo cáo).
+  - **Lệnh `/deep-dev`**: Kích hoạt toàn bộ quy trình kiểm chứng an toàn qua Git Worktree độc lập, Graphify AST và AgentMemory.
+
+---
+
+## 📦 Cài đặt
+
+1. Đóng hoàn toàn Antigravity IDE.
+2. Mở PowerShell và chạy:
 
 ```powershell
 git clone https://github.com/Nakazasen/gemini-deep-dev.git
@@ -30,36 +60,50 @@ Set-Location .\gemini-deep-dev
 .\tools\Install-DeepDev.ps1
 ```
 
-Xong thì mở lại Antigravity. Không cần gỡ bản cũ: installer tự sao lưu hook và thay bản cài theo cách an toàn.
+3. Mở lại Antigravity IDE. Bộ công cụ sẽ tự động tích hợp vào hệ thống (`skills`, `hooks`, `mcp`).
 
-## Dùng hằng ngày
+---
 
-- Việc nhanh, hỏi đáp, đọc code: dùng Gemini như bình thường.
-- Muốn thay đổi code có kiểm chứng: gõ `/deep-dev`, rồi mô tả việc cần làm và test cần chạy.
+## 💡 Hướng dẫn sử dụng
 
-Ví dụ:
+### 1. Dùng hằng ngày
+- Hỏi đáp, đọc hiểu mã nguồn, phân tích lỗi: Sử dụng Gemini như bình thường.
+- Sửa code nhanh: Gemini sẽ tự động dùng atomic diff và chạy test kiểm chứng.
+
+### 2. Khi cần thay đổi kiến trúc hoặc tính năng quan trọng
+Gõ lệnh **`/deep-dev`** kèm yêu cầu:
 
 ```text
 /deep-dev
-Thêm chức năng xuất CSV. Chỉ sửa các file được nêu trong proposal và chạy toàn bộ test hiện có.
+Thêm middleware xác thực JWT và bảo vệ các private routes. Chạy test suite để kiểm chứng trước khi áp dụng.
 ```
 
-Nếu kết quả là `ACCEPT_PATCH`, thay đổi đã được áp dụng. Nếu là `ROLLBACK`, Deep Dev đã chặn bản thử lỗi; dự án thật vẫn nguyên vẹn.
+- Nếu kết quả là **`ACCEPT_PATCH`**: Bản vá đã vượt qua 100% bài test và đã được áp dụng vào dự án.
+- Nếu kết quả là **`ROLLBACK`**: Bản thử nghiệm không đạt chuẩn đã bị chặn lại; mã nguồn của bạn hoàn toàn an toàn.
 
-## Tự cập nhật
+---
 
-Tự cập nhật được **bật mặc định**. Hệ thống kiểm tra sau khi bạn đăng nhập Windows; không cần quyền quản trị máy.
+## 🔄 Cơ chế tự động cập nhật
 
-Chỉ khi có bản mới hơn và file tải về khớp SHA-256 công bố, Deep Dev mới tự cài. Nếu vừa có cập nhật, hãy đóng và mở lại Antigravity để nạp bản mới.
+- Tính năng tự cập nhật được **bật mặc định**.
+- Hệ thống tự động kiểm tra bản cập nhật mới nhất từ GitHub khi người dùng đăng nhập Windows (không yêu cầu quyền Administrator).
+- Tự động đối soát mã băm SHA-256 trước khi áp dụng bản nâng cấp.
 
-## An toàn
+---
 
-- Deep Dev chỉ nghiêm khi bạn chủ động gọi `/deep-dev`.
-- Bản vá luôn được thử ở worktree cách ly trước.
-- Test fail thì rollback; không ghi dở dang vào dự án thật.
-- Nếu cần sửa sau test fail, số vòng repair bị giới hạn để tránh lặp vô tận.
-- `/teamwork-preview` chỉ có thể hỗ trợ phân tích; không có quyền tự ghi code hay tự duyệt kết quả.
+## 🛠️ Dành cho nhà phát triển
 
-## Dành cho người đóng góp
+```powershell
+# Chạy toàn bộ test suite
+py -3 -m pytest tests
+py -3 -m pytest bundle/deep-dev/scripts/test_deep_dev_security.py
 
-Mã nguồn gồm bundle cài đặt, updater, harness và test mô phỏng update. Các hướng dẫn phát hành nội bộ nằm trong mã nguồn, không cần cho người dùng cuối thực hiện.
+# Đóng gói bản phát hành mới
+.\tools\Build-Release.ps1
+```
+
+---
+
+## 📄 Bản quyền
+
+Phát hành dưới giấy phép MIT License. Bản quyền thuộc về [Nakazasen](https://github.com/Nakazasen).
