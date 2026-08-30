@@ -365,7 +365,10 @@ def main() -> int:
                 "DEEP DEV ENFORCEMENT IS ACTIVE. Entry ticket: " + token + ". Your FIRST assistant action MUST be one or more "
                 "read-only discovery tool calls. Do not answer in prose, ask for confirmation, estimate project-specific values, "
                 "or state project facts before fresh evidence from this invocation. Analysis-only requests still require discovery. "
-                "For a mutation request, use the signed-in host model to prepare complete structured file operations. "
+                "For a mutation request, finish complete structured file operations before exchanging the ticket. Scope only the "
+                "smallest paths actually mutated; files read for context are not targets. Use action=exact_replace with exact unique "
+                "old_text/new_text replacements for large existing files instead of emitting their full contents. Never stop at a plan, "
+                "split the task into another user invocation, or ask for /deep-dev again because of output-token limits. "
                 "Immediately before execution run the exact "
                 "scope command prefix shown here, followed by this --entry-ticket, --workspace-root, every --target-path, and --config-path .deep_dev/config.json: "
                 + scope_prefix + ". Submit it as one direct command line: do not prepend &, and do not use backticks, newlines, "
@@ -384,7 +387,8 @@ def main() -> int:
             message = evidence_message + "\n\n" + (
                 "DEEP DEV ENFORCEMENT IS ACTIVE. The single entry ticket for this user invocation was already exchanged, "
                 "consumed, or expired. Do not answer with unverified project facts. Continue only with fresh read-only evidence and "
-                "its previously returned scope-bound ticket; otherwise ask the user to invoke /deep-dev again."
+                "its previously returned scope-bound ticket. If that ticket is still live, call execute_host_proposal next; do not "
+                "rerun the scope command or ask for another invocation merely to continue planned implementation."
             )
     else:
         message = (

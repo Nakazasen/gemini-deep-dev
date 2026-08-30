@@ -245,6 +245,29 @@ def _scenario_existing_targets_main_apply() -> str:
         return response["run_id"]
 
 
+def _scenario_compact_exact_replace() -> str:
+    """Large existing files can use bounded edits instead of full baseline text."""
+    with tempfile.TemporaryDirectory(prefix="flash-sim-exact-replace-") as raw:
+        workspace = Path(raw)
+        config = golden_e2e._prepare_workspace(workspace)
+        for target in TARGETS:
+            (workspace / target).write_text("stale fixture\n", encoding="utf-8")
+        ok, ticket = exchange_ticket(issue_ticket(), workspace, TARGETS, config)
+        assert ok, ticket
+        operations = [
+            {
+                "file_path": operation["file_path"],
+                "action": "exact_replace",
+                "old_text": "stale fixture\n",
+                "new_text": operation["content"],
+            }
+            for operation in golden_e2e._operations()
+        ]
+        response = asyncio.run(_call(_request(workspace, config, ticket, operations)))
+        _assert_accepted(response, workspace)
+        return response["run_id"]
+
+
 def _scenario_empty_placeholder() -> str:
     """Ignore Flash's harmless empty placeholder forms."""
     with tempfile.TemporaryDirectory(prefix="flash-sim-empty-noop-") as raw:
@@ -302,6 +325,7 @@ def main() -> int:
     mismatch = _scenario_scope_mismatch_preserves_ticket()
     legacy = _scenario_legacy_content_field()
     existing_targets = _scenario_existing_targets_main_apply()
+    exact_replace = _scenario_compact_exact_replace()
     empty_noop = _scenario_empty_placeholder()
     operation_aliases = _scenario_operation_aliases()
     native_shape = _scenario_native_harness_shape()
@@ -314,6 +338,7 @@ def main() -> int:
         "scope_mismatch_preserves_ticket": mismatch,
         "legacy_content_field": legacy,
         "existing_targets_main_apply": existing_targets,
+        "compact_exact_replace": exact_replace,
         "empty_noop_placeholder": empty_noop,
         "operation_aliases": operation_aliases,
         "native_harness_shape": native_shape,

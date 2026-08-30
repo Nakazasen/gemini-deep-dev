@@ -466,6 +466,10 @@ def test_reminder_requires_discovery_as_first_action_for_analysis_only_request(
     assert "FIRST assistant action MUST be one or more read-only discovery tool calls" in message
     assert "Analysis-only requests still require discovery" in message
     assert "Do not answer in prose" in message
+    assert "Scope only the smallest paths actually mutated" in message
+    assert "action=exact_replace" in message
+    assert "Never stop at a plan" in message
+    assert "ask for /deep-dev again because of output-token limits" in message
 
 
 def test_reminder_fails_closed_before_ticket_when_evidence_bootstrap_fails(

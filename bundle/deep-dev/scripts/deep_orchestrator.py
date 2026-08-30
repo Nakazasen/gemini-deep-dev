@@ -511,7 +511,9 @@ class DeepDevOrchestrator:
 
         final_verdict = harness_output.get("final_verdict", "REJECTED_UNSAFE")
         try:
-            adaptation = adapt_operations(harness_output.get("proposed_file_operations", []), snapshot)
+            adaptation = adapt_operations(
+                harness_output.get("proposed_file_operations", []), snapshot, ws,
+            )
         except ProposalAdapterError as exc:
             error = f"Host proposal schema is invalid: {exc}"
             state.record_step("HARNESS_REVIEW", status="failed", evidence={"schema_error": str(exc)})
@@ -560,6 +562,7 @@ class DeepDevOrchestrator:
                 "ignored_empty_noops": adaptation.ignored_empty_noops,
                 "normalized_write_actions": adaptation.normalized_write_actions,
                 "normalized_operation_aliases": adaptation.normalized_fields,
+                "expanded_exact_replacements": adaptation.expanded_exact_replacements,
             },
         )
 
