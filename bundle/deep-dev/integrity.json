@@ -1,8 +1,8 @@
 {
   "version": "1.0",
-  "generated_at": "2026-08-30T04:58:07.857202Z",
+  "generated_at": "2026-08-30T10:27:44.864465Z",
   "files": {
-    "SKILL.md": "51f8cd2bf4cdf3f8608a05a311c5ee5542122deb0fae4ea1bd35391723461a10",
+    "SKILL.md": "346cf17cd33661bb09dd754922a8d4ad8585539ec842ece0614bbefa14a74325",
     "mcp_contract.json": "fd55e97e48484dc37f5ad5519d7aa7ec3cdc1791eb93727418cbd9434c590730",
     "scripts/capability.py": "8a6ef412dd93a3fbe75b3d7603b4bd7156c111e72e938119f46beaa82675488c",
     "scripts/deep_dev_gate.py": "d83d4380499e62bde48e2ad1e9c49454c1437616862ffdbf7db2a7d854f824da",
