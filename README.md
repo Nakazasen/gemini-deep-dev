@@ -1,4 +1,4 @@
-# Gemini Deep Dev (v0.1.1)
+# Gemini Deep Dev (v0.1.0)
 
 **Bộ khung thực thi tất định (Deterministic Execution Harness & Quality Gates) dành riêng cho Google Gemini trong Antigravity IDE.**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Vấn đề giải quyết
 
-Dòng mô hình **Gemini Flash (1.5 / 2.0 / 3.7 Flash)** có tốc độ cực nhanh và cửa sổ ngữ cảnh lớn, nhưng khi lập trình tự do thường gặp phải các vấn đề:
+Dòng mô hình **Gemini Flash 3.*** có tốc độ cực nhanh và cửa sổ ngữ cảnh lớn, nhưng khi lập trình tự do thường gặp phải các vấn đề:
 1. **Báo PASS ảo (Fake PASS)**: Khẳng định đã làm xong hoặc đã fix lỗi nhưng thực tế chưa chạy lệnh test/compiler nào.
 2. **Lười biếng (Placeholder Syndrome)**: Tự động rút gọn code bằng `// TODO`, `/* code giữ nguyên */`, `...`, `pass`.
 3. **Loãng ngữ cảnh (Attention Dispersion)**: Khi nạp nhiều file cùng lúc, model bị phân tán sự chú ý và bỏ sót các ràng buộc nhỏ.

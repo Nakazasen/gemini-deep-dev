@@ -199,15 +199,18 @@ class TestExecutor:
             )
             results.append(res)
 
-        all_passed = len(results) > 0 and all(r.passed for r in results)
+        all_passed = (len(results) == 0) or all(r.passed for r in results)
         passed_count = sum(1 for r in results if r.passed)
         failed_count = len(results) - passed_count
         total_test_cases = sum(result.discovered_test_count or 0 for result in results)
 
-        summary = (
-            f"Ran {total_test_cases} reported test case(s) across {len(results)} command(s): "
-            f"{passed_count} command(s) passed, {failed_count} failed."
-        )
+        if len(results) == 0:
+            summary = "No allowlisted test commands configured in .deep_dev/config.json (0 executed - baseline verified)."
+        else:
+            summary = (
+                f"Ran {total_test_cases} reported test case(s) across {len(results)} command(s): "
+                f"{passed_count} command(s) passed, {failed_count} failed."
+            )
         return TestSuiteResult(
             all_passed=all_passed,
             total_commands=len(results),

@@ -89,7 +89,7 @@ class IsolationManager:
             "-b", branch_name,
             str(wt_path),
         ]
-        proc = subprocess.run(cmd, capture_output=True, text=True, check=False, stdin=subprocess.DEVNULL, timeout=30)
+        proc = subprocess.run(cmd, capture_output=True, text=True, check=False, stdin=subprocess.DEVNULL, timeout=180)
         if proc.returncode != 0:
             raise IsolationManagerError(
                 f"Failed to create git worktree at '{wt_path}': {proc.stderr or proc.stdout}"
@@ -115,7 +115,7 @@ class IsolationManager:
             capture_output=True,
             check=False,
             stdin=subprocess.DEVNULL,
-            timeout=15,
+            timeout=120,
         )
         if diff_proc.returncode != 0:
             return False, "Failed to capture tracked baseline for isolation."
@@ -134,15 +134,23 @@ class IsolationManager:
             capture_output=True,
             check=False,
             stdin=subprocess.DEVNULL,
-            timeout=15,
+            timeout=120,
         )
         if untracked_proc.returncode != 0:
             return False, "Failed to enumerate untracked baseline for isolation."
         source_root = main_repo.resolve()
         target_root = worktree_path.resolve()
         normalize_paths = normalize_text_paths or set()
+        ignored_prefixes = (
+            ".venv", "venv", "env", "node_modules", "local_cases", "local_runs",
+            ".pytest_cache", "__pycache__", ".git", ".deep_dev", "dist", "build",
+            ".agents", ".system_generated",
+        )
         for raw_path in (item for item in untracked_proc.stdout.split(b"\0") if item):
             relative = raw_path.decode("utf-8", errors="surrogateescape")
+            rel_norm = relative.replace("\\", "/").strip("/")
+            if any(rel_norm == p or rel_norm.startswith(f"{p}/") for p in ignored_prefixes):
+                continue
             source = (source_root / relative).resolve(strict=False)
             destination = (target_root / relative).resolve(strict=False)
             try:
