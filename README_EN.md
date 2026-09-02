@@ -1,6 +1,10 @@
 # Gemini Deep Dev (v0.3.0)
 
-**A High-Performance Boosted Execution Engine (Dual-Agent Edition) separating Implementation and Verification for Google Gemini Flash in Antigravity IDE.**
+<p align="center">
+  <a href="README.md"><b>[ 🇻🇳 Tiếng Việt ]</b></a> &nbsp;|&nbsp; <b>[ 🇬🇧 English ]</b>
+</p>
+
+**A High-Performance Boosted Execution Engine (Dual-Agent Edition) separating Implementation (Coder) and Verification (Critic) for Google Gemini in Antigravity IDE.**
 
 ---
 
@@ -11,7 +15,7 @@ While **Google Gemini Flash 3.*** delivers industry-leading inference speed and 
 2. **Lazy Code & Placeholders**: Truncating code output with placeholders like `// TODO`, `/* unchanged code */`, `...`, or `pass`.
 3. **Attention Dispersion & Blind Spots**: Self-reviewing one's own code often leads to confirmation bias and overlooked edge cases.
 
-**Gemini Deep Dev (v0.3.0 - Dual-Agent Edition)** introduces strict role separation: **Lead Architect (Planning)** + **Coder Sub-Agent (100% Complete Implementation)** + **Critic Sub-Agent (Independent Test & Adversarial Review)**.
+**Gemini Deep Dev (v0.3.0 - Dual-Agent Edition)** resolves these issues with a strict Triad Architecture: **Lead Architect (Planning)** + **Coder Sub-Agent (100% Complete Implementation)** + **Critic Sub-Agent (Independent Verification & Adversarial Review)**.
 
 ---
 
@@ -50,10 +54,10 @@ flowchart TD
 ## 🚀 Key Highlights in v0.3.0 (Dual-Agent Edition)
 
 - **Strict Coder vs Critic Separation**: Coder focuses on flawless implementation while Critic conducts independent testing and adversarial code review.
-- **Frictionless & Fast**: Direct execution without rigid ticket handshakes or blocking proposal serializations.
+- **Frictionless & Boosted**: Direct execution without rigid ticket handshakes or blocking proposal serializations.
 - **Zero-Evidence = Failure**: Never accepts a completion report unless backed by real terminal test receipts.
 - **Autonomous Self-Healing**: Automatically reads failure tracebacks and iterates until all tests pass (up to 3 loops).
-- **AgentMemory Checkpoints**: Persists verified milestone state to AgentMemory.
+- **AgentMemory Checkpoints**: Persists verified milestone state to AgentMemory across sessions.
 
 ---
 
@@ -61,12 +65,14 @@ flowchart TD
 
 1. Completely close Antigravity IDE.
 2. Open PowerShell in the repository root and run:
+
 ```powershell
 git clone https://github.com/Nakazasen/gemini-deep-dev.git
 Set-Location .\gemini-deep-dev
 .\tools\Install-DeepDev.ps1
 ```
-3. Relaunch Antigravity IDE.
+
+3. Relaunch Antigravity IDE. The package automatically integrates into `skills`, `hooks`, and `mcp`.
 
 ---
 
@@ -74,9 +80,11 @@ Set-Location .\gemini-deep-dev
 
 ### 1. Daily Development
 - Code exploration, refactoring, and debugging: Chat with Gemini as usual.
+- Quick atomic edits: Gemini applies clean diffs and verifies syntax automatically.
 
 ### 2. Deep Implementation & Bug Fixing
 Invoke `/deep-dev` alongside your coding task:
+
 ```text
 /deep-dev
 Implement JWT authentication middleware and secure private routes. Run test suite to verify before completion.
@@ -88,7 +96,28 @@ Implement JWT authentication middleware and secure private routes. Run test suit
 
 ---
 
+## 🔄 Automatic Update Mechanism
+
+- Auto-update is **enabled by default**.
+- The system automatically checks for the latest releases from GitHub during user login (no Administrator privileges required).
+- Validates SHA-256 checksums before applying upgrades.
+
+---
+
+## 🛠️ Developer Guide
+
+```powershell
+# Run the full test suite
+py -3 -m pytest tests
+py -3 -m pytest bundle/deep-dev/scripts/test_deep_dev_security.py
+
+# Package a new release bundle
+.\tools\Build-Release.ps1
+```
+
+---
+
 ## 📄 License & Author
 - Author: **Nakazasen**
-- Version: **v0.3.0**
 - License: MIT License
+- Version: **v0.3.0**

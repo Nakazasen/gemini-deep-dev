@@ -1,5 +1,9 @@
 # Gemini Deep Dev (v0.3.0)
 
+<p align="center">
+  <b>[ 🇻🇳 Tiếng Việt ]</b> &nbsp;|&nbsp; <a href="README_EN.md"><b>[ 🇬🇧 English ]</b></a>
+</p>
+
 **Bộ khung thực thi lập trình sâu tốc độ cao (Boosted Deep Dev Engine - Dual-Agent Edition) phân tách độc lập luồng Thực thi (Coder) và Đối soát (Critic) cho Google Gemini trong Antigravity IDE.**
 
 ---
