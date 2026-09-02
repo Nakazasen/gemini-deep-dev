@@ -1,6 +1,6 @@
-# Gemini Deep Dev (v0.2.0)
+# Gemini Deep Dev (v0.3.0)
 
-**Bộ khung thực thi lập trình sâu tốc độ cao (Boosted Deep Dev Engine) dành riêng cho Google Gemini trong Antigravity IDE.**
+**Bộ khung thực thi lập trình sâu tốc độ cao (Boosted Deep Dev Engine - Dual-Agent Edition) phân tách độc lập luồng Thực thi (Coder) và Đối soát (Critic) cho Google Gemini trong Antigravity IDE.**
 
 ---
 
@@ -9,39 +9,40 @@
 Dòng mô hình **Gemini Flash 3.*** có tốc độ cực nhanh và cửa sổ ngữ cảnh lớn, nhưng khi lập trình tự do thường gặp phải các vấn đề:
 1. **Báo PASS ảo (Fake PASS)**: Khẳng định đã làm xong hoặc đã fix lỗi nhưng thực tế chưa chạy lệnh test/compiler nào.
 2. **Lười biếng (Placeholder Syndrome)**: Tự động rút gọn code bằng `// TODO`, `/* code giữ nguyên */`, `...`, `pass`.
-3. **Loãng ngữ cảnh (Attention Dispersion)**: Khi nạp nhiều file cùng lúc, model bị phân tán sự chú ý và bỏ sót các ràng buộc nhỏ.
+3. **Loãng ngữ cảnh & Điểm mù (Attention Dispersion & Blind Spots)**: Tự viết code rồi tự đánh giá dễ dẫn đến tự thỏa hiệp, bỏ sót các lỗi logic và edge cases.
 
-**Gemini Deep Dev (v0.2.0 - Boosted)** ra đời để kết hợp hoàn hảo giữa **suy luận sâu (Deep Reasoning)**, **thực thi trực tiếp không độ trễ (Zero-Overhead Mutation)** và **vòng lặp tự động sửa lỗi (Self-Healing Test Loop)**.
+**Gemini Deep Dev (v0.3.0 - Dual-Agent Edition)** ra đời để giải quyết triệt để vấn đề này bằng kiến trúc phân tách độc lập: **Lead Architect (Quy hoạch)** + **Coder Sub-Agent (Thực thi 100%)** + **Critic Sub-Agent (Đối soát & Thẩm định độc lập)**.
 
 ---
 
-## ⚙️ Cơ chế hoạt động
+## ⚙️ Cơ chế hoạt động (Triad Architecture)
 
 ```text
                Người dùng yêu cầu tác vụ (/deep-dev)
                                ↓
-               Khảo sát AST & Scoped Subgraph (Graphify)
+         [Vai trò 1] Lead Architect: Khảo sát AST & Lập Kế hoạch
                                ↓
-               Thực thi trực tiếp 100% đầy đủ (Không placeholder // TODO)
+         [Vai trò 2] Coder Sub-Agent: Chỉnh sửa trực tiếp 100% đầy đủ
                                ↓
-               Chạy Test Suite, Compiler & Linter độc lập từ Terminal
+         [Vai trò 3] Critic Sub-Agent: Chạy Test Suite & Adversarial Review
                                ↓
-      ┌────────────────────────┴────────────────────────┐
-      ▼                                                 ▼
-[TẤT CẢ TEST PASS]                              [CÓ TEST FAIL / LỖI]
-  • Báo cáo bằng chứng (Evidence-based stdout)    • Đọc Traceback & tìm Root Cause
-  • Lưu Checkpoint AgentMemory tự động            • Tự động sửa mã nguồn (Self-healing)
-  • Hoàn thành tác vụ trong một lượt duy nhất     • Chạy lại Test đến khi 100% xanh
+       ┌───────────────────────┴───────────────────────┐
+       ▼                                               ▼
+[TẤT CẢ TEST PASS]                             [CÓ TEST FAIL / LỖI]
+  • Báo cáo bằng chứng (Evidence stdout)         • Đọc Traceback & gửi phản hồi cho Coder
+  • Lưu Checkpoint AgentMemory tự động           • Coder tự động sửa mã nguồn (Self-healing)
+  • Hoàn thành tác vụ trong một lượt             • Chạy lại Test đến khi 100% xanh (tối đa 3 vòng)
 ```
 
 ---
 
-## 🚀 Tính năng nổi bật trong bản v0.2.0 (Boosted Engine)
+## 🚀 Tính năng nổi bật trong bản v0.3.0 (Dual-Agent Edition)
 
-- **Frictionless & Boosted**: Hoạt động mượt mà không bị tắc luồng, không rào cản ticket hay proposal JSON rườm rà.
+- **Phân tách Thực thi & Đối soát (Coder vs Critic)**: Coder tập trung viết mã nguồn chất lượng cao, Critic độc lập chạy test và phản biện đối nghịch tìm lỗi.
+- **Frictionless & Boosted**: Hoạt động trực tiếp không bị tắc luồng, không rào cản ticket hay proposal JSON rườm rà.
 - **Zero-Evidence = Failure**: Cấm tuyệt đối việc báo cáo hoàn thành nếu không có stdout thực tế từ Terminal Runner.
 - **Tự động chữa lành (Self-Healing Loop)**: Tự đọc traceback lỗi khi test fail và tự động sửa đến khi vượt qua toàn bộ test suite.
-- **AgentMemory Checkpoints**: Tự động lưu bài học và tiến độ vào hệ thống AgentMemory sau mỗi mốc quan trọng.
+- **AgentMemory Checkpoints**: Tự động lưu bài học và tiến độ vào hệ thống AgentMemory sau mỗi mốc quan trọng được Critic thông qua.
 
 ---
 

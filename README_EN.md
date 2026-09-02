@@ -1,6 +1,6 @@
-# Gemini Deep Dev (v0.2.0)
+# Gemini Deep Dev (v0.3.0)
 
-**A High-Performance Boosted Execution Engine & Quality Gate System tailored for Google Gemini Flash in Antigravity IDE.**
+**A High-Performance Boosted Execution Engine (Dual-Agent Edition) separating Implementation and Verification for Google Gemini Flash in Antigravity IDE.**
 
 ---
 
@@ -9,38 +9,39 @@
 While **Google Gemini Flash 3.*** delivers industry-leading inference speed and a vast context window, autonomous coding workflows often suffer from predictable pitfalls:
 1. **Hallucinated Verification (Fake PASS)**: Claiming fixes or implementations are complete without running actual test commands.
 2. **Lazy Code & Placeholders**: Truncating code output with placeholders like `// TODO`, `/* unchanged code */`, `...`, or `pass`.
-3. **Attention Dispersion**: Degradation of focus across massive context inputs, leading to missed architectural constraints.
+3. **Attention Dispersion & Blind Spots**: Self-reviewing one's own code often leads to confirmation bias and overlooked edge cases.
 
-**Gemini Deep Dev (v0.2.0 - Boosted)** combines **Deep Reasoning**, **Zero-Overhead Direct Mutation**, and an **Autonomous Self-Healing Test Loop** to ensure 100% verified, bug-free code delivery in a single pass.
+**Gemini Deep Dev (v0.3.0 - Dual-Agent Edition)** introduces strict role separation: **Lead Architect (Planning)** + **Coder Sub-Agent (100% Complete Implementation)** + **Critic Sub-Agent (Independent Test & Adversarial Review)**.
 
 ---
 
-## ⚙️ Architecture & Execution Lifecycle
+## ⚙️ Architecture & Execution Lifecycle (Triad Architecture)
 
 ```text
                User Prompt (/deep-dev)
-                          ↓
-               AST & Dependency Discovery (Graphify)
-                          ↓
-               Direct Full Implementation (Zero Placeholders)
-                          ↓
-               Independent Test Runner, Compiler & Linter
-                          ↓
-    ┌─────────────────────┴─────────────────────┐
-    ▼                                           ▼
-[ALL TESTS PASS]: Complete Execution          [TEST FAIL]: Traceback Inspection,
-  • Evidence-based Output (Terminal stdout)     • Root Cause Diagnosis,
-  • Automatic AgentMemory Checkpoints           • Self-Healing Code Patching
+                           ↓
+         [Role 1] Lead Architect: AST & Dependency Discovery
+                           ↓
+         [Role 2] Coder Sub-Agent: Direct Full Implementation (Zero Placeholders)
+                           ↓
+         [Role 3] Critic Sub-Agent: Independent Test Runner & Adversarial Review
+                           ↓
+    ┌──────────────────────┴──────────────────────┐
+    ▼                                             ▼
+[ALL TESTS PASS]: Complete Execution          [TEST FAIL]: Traceback Inspection
+  • Evidence-based Output (Terminal stdout)     • Feedback to Coder Sub-Agent
+  • Automatic AgentMemory Checkpoints           • Autonomous Self-Healing Iteration
 ```
 
 ---
 
-## 🚀 Key Highlights in v0.2.0 (Boosted Engine)
+## 🚀 Key Highlights in v0.3.0 (Dual-Agent Edition)
 
+- **Strict Coder vs Critic Separation**: Coder focuses on flawless implementation while Critic conducts independent testing and adversarial code review.
 - **Frictionless & Fast**: Direct execution without rigid ticket handshakes or blocking proposal serializations.
 - **Zero-Evidence = Failure**: Never accepts a completion report unless backed by real terminal test receipts.
 - **Autonomous Self-Healing**: Automatically reads failure tracebacks and iterates until all tests pass.
-- **AgentMemory Checkpoints**: Persists lessons and project state to AgentMemory across milestones.
+- **AgentMemory Checkpoints**: Persists verified milestone state to AgentMemory.
 
 ### 2. Zero-Config & Flexible Test Enforcement
 - **Arbitrary Repositories (No `.deep_dev/config.json`)**: Deep Dev automatically validates AST syntax, merge sanity, and checksums. It never fails a proposal due to missing test suites.
