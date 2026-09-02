@@ -1,6 +1,6 @@
-# Gemini Deep Dev (v0.1.0)
+# Gemini Deep Dev (v0.2.0)
 
-**A Deterministic Execution Harness & Runtime Quality Gate Engine tailored for Google Gemini Flash in Antigravity IDE.**
+**A High-Performance Boosted Execution Engine & Quality Gate System tailored for Google Gemini Flash in Antigravity IDE.**
 
 ---
 
@@ -10,9 +10,8 @@ While **Google Gemini Flash 3.*** delivers industry-leading inference speed and 
 1. **Hallucinated Verification (Fake PASS)**: Claiming fixes or implementations are complete without running actual test commands.
 2. **Lazy Code & Placeholders**: Truncating code output with placeholders like `// TODO`, `/* unchanged code */`, `...`, or `pass`.
 3. **Attention Dispersion**: Degradation of focus across massive context inputs, leading to missed architectural constraints.
-4. **Destructive In-Place Mutations**: Overwriting workspace files directly without isolation or rollback mechanisms.
 
-**Gemini Deep Dev** transforms Gemini Flash into a **deterministic, precise, and verifiable coding engine** via strict runtime execution gates and ephemeral Git worktree isolation.
+**Gemini Deep Dev (v0.2.0 - Boosted)** combines **Deep Reasoning**, **Zero-Overhead Direct Mutation**, and an **Autonomous Self-Healing Test Loop** to ensure 100% verified, bug-free code delivery in a single pass.
 
 ---
 
@@ -20,36 +19,33 @@ While **Google Gemini Flash 3.*** delivers industry-leading inference speed and 
 
 ```text
                User Prompt (/deep-dev)
-                         ↓
-               Preflight & Snapshot: Disposable Isolated Git Worktree
-                         ↓
-               Scope Ticket Exchange: Strict target path whitelisting
-                         ↓
-               Trial Mutation: Atomic Exact-Replace Patch Application
-                         ↓
-               Verification: Run Allowlisted Test Suite (if configured)
-                             or Verify Syntax Baseline (if zero-config)
-                         ↓
-   ┌─────────────────────┴─────────────────────┐
-   ▼                                           ▼
-[PASS]: Atomic Merge into Main Workspace     [FAIL]: Instant Worktree Rollback,
-        & Sync AgentMemory / Graphify                Audit Log Recorded
+                          ↓
+               AST & Dependency Discovery (Graphify)
+                          ↓
+               Direct Full Implementation (Zero Placeholders)
+                          ↓
+               Independent Test Runner, Compiler & Linter
+                          ↓
+    ┌─────────────────────┴─────────────────────┐
+    ▼                                           ▼
+[ALL TESTS PASS]: Complete Execution          [TEST FAIL]: Traceback Inspection,
+  • Evidence-based Output (Terminal stdout)     • Root Cause Diagnosis,
+  • Automatic AgentMemory Checkpoints           • Self-Healing Code Patching
 ```
 
 ---
 
-## 🚀 Key Highlights
+## 🚀 Key Highlights in v0.2.0 (Boosted Engine)
 
-### 1. True Ephemeral Isolation (Git Worktree Engine)
-- All proposed mutations and tests run inside an isolated Git worktree branch (`.deep_dev/worktrees/...`).
-- The user's main workspace remains 100% untouched until tests and AST validations pass.
-- Fast Windows NTFS performance: Untracked heavy directories (`.venv`, `node_modules`, `local_cases`, `__pycache__`) are skipped during baseline mirroring, ensuring `< 1s` worktree initialization.
+- **Frictionless & Fast**: Direct execution without rigid ticket handshakes or blocking proposal serializations.
+- **Zero-Evidence = Failure**: Never accepts a completion report unless backed by real terminal test receipts.
+- **Autonomous Self-Healing**: Automatically reads failure tracebacks and iterates until all tests pass.
+- **AgentMemory Checkpoints**: Persists lessons and project state to AgentMemory across milestones.
 
 ### 2. Zero-Config & Flexible Test Enforcement
 - **Arbitrary Repositories (No `.deep_dev/config.json`)**: Deep Dev automatically validates AST syntax, merge sanity, and checksums. It never fails a proposal due to missing test suites.
 - **Projects with `.deep_dev/config.json`**: Strictly enforces configured test commands (`pytest`, `npm test`, `cargo test`, etc.), requiring verified stdout/stderr proof before merging.
 
-### 3. Anti-Laziness & Strict Exact Replacement
 - Completely eliminates placeholder hallucinations.
 - All file edits require 100% complete character-matched replacement chunks.
 

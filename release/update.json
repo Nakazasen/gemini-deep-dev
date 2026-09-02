@@ -1,7 +1,7 @@
 {
     "schema_version":  1,
-    "latest_version":  "0.1.0",
-    "package_url":  "https://github.com/Nakazasen/gemini-deep-dev/releases/download/v0.1.0/gemini-deep-dev-v0.1.0.zip",
-    "sha256":  "3fda2587210126c45d31291ebbabebd08b7a65b6290d4985fda0d2e7c2db9f5d",
-    "release_notes":  "Release v0.1.0"
+    "latest_version":  "0.2.0",
+    "package_url":  "https://github.com/Nakazasen/gemini-deep-dev/releases/download/v0.2.0/gemini-deep-dev-v0.2.0.zip",
+    "sha256":  "288d15184e527b4f786042367cee7fbaa3634bcbe1694a7dad41bb1e9f92d85c",
+    "release_notes":  "Release v0.2.0"
 }

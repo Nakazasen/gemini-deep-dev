@@ -1,6 +1,6 @@
-# Gemini Deep Dev (v0.1.0)
+# Gemini Deep Dev (v0.2.0)
 
-**Bộ khung thực thi tất định (Deterministic Execution Harness & Quality Gates) dành riêng cho Google Gemini trong Antigravity IDE.**
+**Bộ khung thực thi lập trình sâu tốc độ cao (Boosted Deep Dev Engine) dành riêng cho Google Gemini trong Antigravity IDE.**
 
 ---
 
@@ -11,7 +11,7 @@ Dòng mô hình **Gemini Flash 3.*** có tốc độ cực nhanh và cửa sổ 
 2. **Lười biếng (Placeholder Syndrome)**: Tự động rút gọn code bằng `// TODO`, `/* code giữ nguyên */`, `...`, `pass`.
 3. **Loãng ngữ cảnh (Attention Dispersion)**: Khi nạp nhiều file cùng lúc, model bị phân tán sự chú ý và bỏ sót các ràng buộc nhỏ.
 
-**Gemini Deep Dev** ra đời để biến Gemini Flash thành một cỗ máy lập trình **nhanh, chuẩn xác và không thể gian lận** bằng các chốt chặn ở tầng thực thi (Runtime Process Gates).
+**Gemini Deep Dev (v0.2.0 - Boosted)** ra đời để kết hợp hoàn hảo giữa **suy luận sâu (Deep Reasoning)**, **thực thi trực tiếp không độ trễ (Zero-Overhead Mutation)** và **vòng lặp tự động sửa lỗi (Self-Healing Test Loop)**.
 
 ---
 
@@ -22,30 +22,26 @@ Dòng mô hình **Gemini Flash 3.*** có tốc độ cực nhanh và cửa sổ 
                                ↓
                Khảo sát AST & Scoped Subgraph (Graphify)
                                ↓
-               Sinh bản vá nguyên tử (Atomic Exact Replace - No Placeholders)
+               Thực thi trực tiếp 100% đầy đủ (Không placeholder // TODO)
                                ↓
-               Thử nghiệm bản vá trong Git Worktree cách ly
-                               ↓
-               Chạy Test Suite & Linter độc lập từ Terminal
+               Chạy Test Suite, Compiler & Linter độc lập từ Terminal
                                ↓
       ┌────────────────────────┴────────────────────────┐
       ▼                                                 ▼
 [TẤT CẢ TEST PASS]                              [CÓ TEST FAIL / LỖI]
-  • Tự động merge vào dự án thật                  • Hủy bỏ bản thử (Rollback an toàn)
-  • Cập nhật AgentMemory Checkpoint               • Dự án gốc giữ nguyên 100%
-  • Báo cáo trạng thái ACCEPT_PATCH               • Kích hoạt Repair Feedback Loop
+  • Báo cáo bằng chứng (Evidence-based stdout)    • Đọc Traceback & tìm Root Cause
+  • Lưu Checkpoint AgentMemory tự động            • Tự động sửa mã nguồn (Self-healing)
+  • Hoàn thành tác vụ trong một lượt duy nhất     • Chạy lại Test đến khi 100% xanh
 ```
 
 ---
 
-## 🚀 Tính năng nổi bật trong bản v0.1.1 (Lean & Fast)
+## 🚀 Tính năng nổi bật trong bản v0.2.0 (Boosted Engine)
 
-- **Lean Execution Engine**: Tinh giản tối đa các bước thủ tục trung gian rườm rà, giải phóng 100% năng lực suy luận của Gemini Flash cho code logic.
+- **Frictionless & Boosted**: Hoạt động mượt mà không bị tắc luồng, không rào cản ticket hay proposal JSON rườm rà.
 - **Zero-Evidence = Failure**: Cấm tuyệt đối việc báo cáo hoàn thành nếu không có stdout thực tế từ Terminal Runner.
-- **Atomic Diff Interceptor**: Ép buộc thay thế chính xác từng dòng code (`exact_replace`), tự nhiên loại bỏ hoàn toàn code lười `TODO`.
-- **Chế độ kép linh hoạt (Dual Mode)**:
-  - **Chat thông thường**: Hoạt động nhanh, áp dụng quy tắc Lean Invariant (code đầy đủ, kiểm thử trước khi báo cáo).
-  - **Lệnh `/deep-dev`**: Kích hoạt toàn bộ quy trình kiểm chứng an toàn qua Git Worktree độc lập, Graphify AST và AgentMemory.
+- **Tự động chữa lành (Self-Healing Loop)**: Tự đọc traceback lỗi khi test fail và tự động sửa đến khi vượt qua toàn bộ test suite.
+- **AgentMemory Checkpoints**: Tự động lưu bài học và tiến độ vào hệ thống AgentMemory sau mỗi mốc quan trọng.
 
 ---
 

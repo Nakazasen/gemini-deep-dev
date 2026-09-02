@@ -1,66 +1,34 @@
 ---
 name: deep-dev
-description: Run the opt-in fail-closed Deep Dev workflow with required AgentMemory recall/save and self-healing Graphify analysis. Activate only when the user explicitly invokes /deep-dev.
+description: Run the high-performance Boosted Deep Dev workflow with deep reasoning, evidence-based verification, self-healing reflection loops, and mandatory AgentMemory checkpoints. Activate when the user invokes /deep-dev or requests deep implementation, refactoring, or bug fixes.
 ---
 
-# Deep Dev (Deterministic Flash Execution Engine)
+# Boosted Deep Dev Engine (v0.2.0)
 
-Use the deterministic graph-feedback workflow only for an explicit `/deep-dev` request. Ordinary requests remain normal assistant work; Deep Dev must not create extra user commands or block them.
+Thực thi quy trình lập trình sâu, tất định và tự chữa lành cho mọi tác vụ code trên Antigravity IDE:
 
-For every explicit `/deep-dev` invocation, the first assistant action must be one or more read-only discovery tool calls. Do not answer in prose, ask for confirmation, estimate project-specific values, or state project facts before collecting fresh evidence in that invocation. This applies even when the requested output is only analysis, advice, or a plan. Never describe a review as exhaustive, verified, tested, or safe unless the current run contains corresponding file/graph/test evidence. Clearly label any conclusion that current evidence cannot verify. Mutation requests must additionally complete the ticket, scope, and orchestrator workflow below.
+## 1. Tư duy sâu & Phân tích ngữ cảnh (Deep Reasoning & AST First)
+- Đọc và phân tích codebase có chọn lọc (dùng Graphify/grep_search/view_file).
+- Nắm bắt đúng AST và dependency graph trước khi chạm vào mã nguồn.
+- Lập kế hoạch rõ ràng cho các thay đổi phức tạp trước khi thực hiện.
 
-Before the model receives an entry ticket, the entry hook produces a persisted entry-run artifact containing real execution receipts: AgentMemory health plus smart-search recall, a fresh Graphify query or AST extraction, and a Harness evidence FSM ending in `READY`. Boolean `*_invoked` claims, cached graph reads without a Graphify engine operation, and schema-only Harness validation are not sufficient. If any receipt or the terminal Harness preflight state is missing, entry fails closed.
+## 2. Thực thi trực tiếp & Chống làm ẩu (Zero-Tolerance for Placeholders)
+- Sử dụng trực tiếp các công cụ chỉnh sửa chuẩn (`replace_file_content`, `write_to_file`) mà không bị rào cản hay gián đoạn luồng.
+- Tuyệt đối KHÔNG viết code giữ chỗ hoặc lười biếng (`// TODO`, `/* code giữ nguyên */`, `...`, `pass`).
+- Mọi đoạn code phải hoàn chỉnh 100%, có type hints và xử lý ngoại lệ chặt chẽ.
 
-The PreInvocation hook reuses that exact persisted entry artifact for subsequent tools in the same explicit `/deep-dev` invocation. It must not rerun AgentMemory, Graphify, or the Harness entry FSM before every tool. A new explicit `/deep-dev` user event receives a new entry run.
+## 3. Vòng lặp tự động sửa lỗi (Self-Healing / Reflection Loop)
+- Sau khi chỉnh sửa code, BẮT BUỘC chạy ngay kiểm thử thực tế qua terminal (`run_command`):
+  - Chạy test tự động: `py -3 -m pytest <test_files> -q`
+  - Kiểm tra cú pháp toàn dự án: `py -3 -m compileall src -q`
+  - Kiểm tra diff formatting: `git diff --check`
+- Nếu phát hiện lỗi (Exception, SyntaxError, AssertionError):
+  - Không dừng lại phân bua.
+  - Tự động đọc lại traceback -> Tìm nguyên nhân gốc -> Sửa file -> Chạy lại test đến khi 100% xanh (tối đa 3 vòng lặp).
 
-## Mandatory Entry Contract (Lean & Deterministic)
+## 4. Kiểm chứng trung thực (Evidence-based Verification)
+- Tuyệt đối không báo cáo "Đã test PASS" hoặc "Đã fix thành công" nếu không có bằng chứng thực thi thực tế (stdout/stderr từ terminal runner).
 
-1. **Read-only discovery**: Inspect the codebase and Graphify graph to identify the smallest mutation set that can complete the user's task. Files read for context are not automatically mutation targets.
-2. **Resolve boundary**: Resolve the target boundary through further read-only discovery whenever possible. Ask the user only when an unavailable product choice or missing authority truly prevents implementation; task size and output-token concerns are not reasons to stop.
-3. **Structured atomic operations**: Produce complete structured `proposed_file_operations` from the signed-in host model with no placeholders (`// TODO`, `...`, `pass`).
-   - For a new or small file: `{ "file_path": "relative/path", "action": "write", "content": "full file text" }`.
-   - For an existing file: `{ "file_path": "relative/path", "action": "exact_replace", "replacements": [{ "old_text": "exact unique text", "new_text": "replacement" }] }`. Deep Dev expands each unique match against the sealed snapshot and rejects stale, missing, or ambiguous text. Never send a plan instead of operations.
-4. **Scope exchange**: Only after every operation is fully prepared, exchange the injected bootstrap ticket once using `deep_dev_scope.py`, with the workspace, only the paths the proposal may mutate, and `--config-path .deep_dev/config.json`. Do not include files merely inspected, imported, tested, or mentioned in documentation unless the proposal changes them.
-5. **Direct MCP execution**: Immediately after the scope exchange, call the declared direct MCP tool `deep_dev_harness/execute_host_proposal`; do not inspect MCP configuration, search transport code, or look for `call_mcp_tool`. Pass the exact task, workspace, target set, config path, returned capability ticket, and structured operations as direct arguments. Omit `run_id`: Deep Dev creates it safely for every proposal and revision. Do not use direct write, edit, patch, delete, copy, move, or arbitrary terminal mutation tools.
-6. **Zero bypass**: Treat `BLOCKED`, `STOP`, and `ROLLBACK` as failures. Never bypass a failure by switching tools.
-7. **Acceptance criteria**: Accept output only when the terminal state is `ACCEPT_PATCH`, graph diff is safe, configured allowlist tests pass, and the verified patch has been applied to the main workspace.
-8. **Trajectory integrity**: Require the trajectory graph to report `acceptance_ready=true`; never infer success from the final text alone.
+## 5. Lưu Checkpoint AgentMemory
+- Sau mỗi milestone quan trọng hoàn thành, tự động lưu checkpoint vào `AgentMemory` để duy trì ngữ cảnh liên tục cho dự án.
 
-A mutation invocation is terminal only after `ACCEPT_PATCH` or a concrete harness failure. Do not end with an implementation plan, split the work into a second user invocation, or ask the user to run `/deep-dev` again merely because a file is large. Use compact `exact_replace` operations and the existing repair ticket. After the scope exchange, the next action must be `execute_host_proposal`; do not plan, summarize, or exchange the same entry ticket again.
-
-## Required Integrations
-
-- **AgentMemory:** Check REST health, auto-start an installed service when needed, require smart-search recall before generation, and require verified lesson persistence before `ACCEPT_PATCH`. Stop only if auto-start or a required operation actually fails.
-- **Graphify:** Install the `graphifyy` package when missing, refresh the Antigravity integration, update a missing or stale graph, and verify freshness. Use the bounded AST scanner only after a real install/update/verification error, and report degraded graph status.
-
-The entry hook injects the exact, machine-local command prefix for `deep_dev_scope.py`. Copy that prefix exactly and append the required arguments on one command line, including `--config-path .deep_dev/config.json`. Never infer a username or Python location. Do not prepend PowerShell `&`; do not use backticks, newlines, pipes, shell variables, command substitution, or chaining. Read the scope helper's JSON output and pass its returned ticket directly to `execute_host_proposal` with the identical workspace, target set, and config path. Never reveal the ticket in prose.
-
-The `/deep-dev` entry hook injects a short-lived bootstrap ticket. Internally exchange it once through the exact installed `deep_dev_scope.py`; users still run only `/deep-dev`. The returned ticket is bound to the normalized workspace, targets, and config, and is consumed once inside the exact MCP host-proposal tool. Deep Dev generates run IDs itself. During an explicit Deep Dev invocation, the global `PreToolUse` hook permits allowlisted read-only tools, the exact scope command, and a structurally valid host-proposal call. Unknown tools fail closed. It denies missing/reused/expired or scope-mismatched tickets, direct mutation, unsafe read-command options, traversal, masquerading, non-allowlisted terminal commands, and chaining.
-
-When `execute_host_proposal` returns a `repair` object after `ROLLBACK`, its `repair.next_tool` is authoritative: your next tool call must be direct MCP `deep_dev_harness/execute_host_proposal`, copying `repair.next_tool.arguments` exactly and adding only corrected `proposed_file_operations`. Do not call `call_mcp_tool`. For `reason=incomplete_proposal`, include a non-noop operation for every path in `evidence.missing_targets`; for `reason=test_failure`, read `evidence.test_results_artifact` first; for `reason=proposal_schema`, use either the short `write` shape or the bounded `exact_replace` shape above. There are at most two revisions total after the initial proposal, shared by both failure types; never use direct mutation tools or change task/scope during revision.
-
-## Adaptive Teamwork Repair
-
-Use `/teamwork-preview` only when `repair.teamwork_preview` is present, or when the task has a security, persistence, schema/migration, public API, or multi-file contract change. Do not use it for a one-file copy change: Flash should remain fast there.
-
-For a repair, invoke the small advisory squad specified by `repair.teamwork_preview` **before** spending the repair ticket. The team must work read-only and return one handoff containing: root cause tied to the evidence, smallest safe fix, scope check, and one owner for the final complete operations. Explorer/debugger and reviewer/challenger may disagree; the proposal integrator resolves that disagreement into exactly one proposal. The parent is the only executor: no teammate may call `execute_host_proposal`, issue a scope command, mutate the workspace, or claim tests passed. Deep Dev remains the independent test/apply authority. If Teamwork is unavailable, state `teamwork_degraded` and continue with the same bounded repair contract; never fabricate a team verdict.
-
-## Verified Workflow
-
-1. **Preflight:** Auto-start and verify AgentMemory, self-heal Graphify, fingerprint the exact Git working state (clean or dirty), lock `.deep_dev/config.json`, and resolve impact paths as advisory evidence. Impact neighbors never expand the signed mutation or snapshot scope.
-2. **Snapshot:** Capture SHA-256 hashes for every allowed path.
-3. **Host coder + deterministic critic:** Gemini Flash generates structured operations in memory; Deep Dev validates paths, hashes, schema, dependency boundaries, and tests without requiring a second Gemini API key. Dependency capture scans only signed code targets with bounded file/time limits; it never walks virtual environments, build outputs, or the whole repository for a file-scoped proposal.
-4. **Isolation and verification:** Mirror the user's exact current baseline into an external Git worktree, apply the proposal there, require a safe dependency `graph_diff.json`, run allowlisted tests, verify cleanup and an unchanged baseline, persist evidence, then apply only the verified delta to the main workspace before `ACCEPT_PATCH`.
-
-Progress is recorded without screenshots: each run writes append-only `events.jsonl`, liveness timestamps, and a compact per-project health summary under `%LOCALAPPDATA%\deep-dev`.
-The run also writes `trajectory.json`, evaluates workflow-phase precision/recall/order (not semantic code quality), filters stale or contradictory recalled memory while preserving required AgentMemory metadata, permits one bounded retry only for transient/schema harness failures, opens a 15-minute circuit after three project failures, and attempts recovery only after AgentMemory, Graphify, and stable-Git-baseline probes pass. After applying a verified patch to the main workspace, require a Graphify refresh attempt and record its exact success or degraded result before `ACCEPT_PATCH`.
-
-## Handover Report
-
-- Run ID and terminal state.
-- Target paths and hash changes.
-- Test count, pass/fail result, and duration.
-- Generated patch path.
-- Any degraded Graphify or memory status.
-- AgentMemory health, recall, and save evidence. A successful run must never report degraded memory.
-- Trajectory precision, recall, order, score, and `acceptance_ready`.

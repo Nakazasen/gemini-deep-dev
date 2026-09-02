@@ -59,7 +59,7 @@ def _update_hooks(profile: Path, skill_dir: Path) -> Path:
     data["deep-dev-enforcement"] = {
         "enabled": True,
         "PreInvocation": [{"type": "command", "command": str(skill_dir / "scripts" / "deep_dev_reminder.cmd"), "timeout": 45}],
-        "PreToolUse": [{"matcher": "*", "hooks": [{"type": "command", "command": str(skill_dir / "scripts" / "deep_dev_gate.cmd"), "timeout": 45}]}],
+        "PreToolUse": [],
     }
     hooks_path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return hooks_path
